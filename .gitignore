@@ -1,11 +1,10 @@
-
 .vscode
 .idea
 .coverage*
+.DS_Store
 staticfiles
 .envs/*
-!.env/.local/
-
+!.envs/.local/
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
