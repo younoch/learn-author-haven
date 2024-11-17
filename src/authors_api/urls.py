@@ -8,6 +8,8 @@ from rest_framework import permissions
 
 from core_apps.users.views import CustomUserDetailsView
 
+from core_apps.common.views import test_view
+
 schema_view = get_schema_view(
     openapi.Info(
         title="Authors Haven API",
@@ -36,7 +38,7 @@ urlpatterns = [
     path("api/v1/ratings/", include("core_apps.ratings.urls")),
     path("api/v1/bookmarks/", include("core_apps.bookmarks.urls")),
     path("api/v1/responses/", include("core_apps.responses.urls")),
-    path("api/v1/elastic/", include("core_apps.search.urls")),
+    path('api/v1/common/', include("core_apps.common.urls")),
 ]
 
 admin.site.site_header = "Authors Haven API Admin"
