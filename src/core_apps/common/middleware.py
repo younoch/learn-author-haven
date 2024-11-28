@@ -21,7 +21,7 @@ class CustomCorsMiddleware(MiddlewareMixin):
     def process_preflight(self, request):
         response = JsonResponse({})
         response["Access-Control-Allow-Origin"] = "*"
-        response["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS, PUT, DELETE"
+        response["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS, PUT, DELETE, PATCH"
         response["Access-Control-Allow-Headers"] = "Authorization, Content-Type, X-CSRFToken"
         response["Access-Control-Allow-Credentials"] = "true"
         response["Access-Control-Max-Age"] = "86400"
@@ -32,7 +32,7 @@ class CustomCorsMiddleware(MiddlewareMixin):
 
     def process_response(self, request, response):
         response["Access-Control-Allow-Origin"] = "*"
-        response["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS, PUT, DELETE"
+        response["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS, PUT, DELETE, PATCH"
         response["Access-Control-Allow-Headers"] = "Authorization, Content-Type, X-CSRFToken"
         response["Access-Control-Allow-Credentials"] = "true"
         logger.info(f"CORS headers applied for {request.method} {request.path}: {response}")

@@ -1,15 +1,13 @@
-# TODO: change this in production
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 from rest_framework import generics, status
 from rest_framework.exceptions import NotFound
-from rest_framework.parsers import MultiPartParser
+from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from authors_api.settings.local import DEFAULT_FROM_EMAIL
-
 from .exceptions import CantFollowYourself
 from .models import Profile
 from .pagination import ProfilePagination
@@ -18,13 +16,11 @@ from .serializers import FollowingSerializer, ProfileSerializer, UpdateProfileSe
 
 User = get_user_model()
 
-
 class ProfileListAPIView(generics.ListAPIView):
     queryset = Profile.objects.all()
     serializer_class = ProfileSerializer
     pagination_class = ProfilePagination
     renderer_classes = [ProfilesJSONRenderer]
-
 
 class ProfileDetailAPIView(generics.RetrieveAPIView):
     permission_classes = [IsAuthenticated]
@@ -39,7 +35,6 @@ class ProfileDetailAPIView(generics.RetrieveAPIView):
         user = self.request.user
         profile = self.get_queryset().get(user=user)
         return profile
-
 
 class UpdateProfileAPIView(generics.RetrieveAPIView):
     serializer_class = UpdateProfileSerializer
@@ -58,6 +53,23 @@ class UpdateProfileAPIView(generics.RetrieveAPIView):
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+class UpdateProfilePhotoAPIView(generics.RetrieveAPIView):
+    serializer_class = UpdateProfileSerializer
+    permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
+    renderer_classes = [ProfileJSONRenderer]
+
+    def get_object(self):
+        profile = self.request.user.profile
+        return profile
+
+    def patch(self, request, *args, **kwargs):
+        instance = self.get_object()
+        data = {'profile_photo': request.data.get('profile_photo')}
+        serializer = self.get_serializer(instance, data=data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 class FollowerListView(APIView):
     permission_classes = [IsAuthenticated]
@@ -76,7 +88,6 @@ class FollowerListView(APIView):
         except Profile.DoesNotExist:
             return Response(status=404)
 
-
 class FollowingListView(APIView):
     def get(self, request, user_id, format=None):
         try:
@@ -92,7 +103,6 @@ class FollowingListView(APIView):
             return Response(formatted_response, status=status.HTTP_200_OK)
         except Profile.DoesNotExist:
             return Response(status=404)
-
 
 class FollowAPIView(APIView):
     def post(self, request, user_id, format=None):
@@ -125,7 +135,6 @@ class FollowAPIView(APIView):
             )
         except Profile.DoesNotExist:
             raise NotFound("You can't follow a profile that does not exist.")
-
 
 class UnfollowAPIView(APIView):
     def post(self, request, user_id, *args, **kwargs):

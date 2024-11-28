@@ -39,6 +39,7 @@ urlpatterns = [
     path("api/v1/bookmarks/", include("core_apps.bookmarks.urls")),
     path("api/v1/responses/", include("core_apps.responses.urls")),
     path('api/v1/common/', include("core_apps.common.urls")),
+    path('api/v1/invoice/', include("core_apps.invoice.urls")),
 ]
 
 admin.site.site_header = "Authors Haven API Admin"
