@@ -4,7 +4,8 @@ from .views import (
     OrganizationRetrieveUpdateDestroyView,
     OrganizationMemberCreateView,
     OrganizationLogoUploadView,
-    OrganizationTestView
+    OrganizationTestView,
+    UserOrganizationsView
 )
 
 urlpatterns = [
@@ -13,4 +14,5 @@ urlpatterns = [
     path("members/", OrganizationMemberCreateView.as_view(), name="organization-member-create"),
     path("<int:pk>/upload-logo/", OrganizationLogoUploadView.as_view(), name="organization-upload-logo"),
     path("test/", OrganizationTestView.as_view(), name="organization-test"),
+    path("user-organizations/", UserOrganizationsView.as_view(), name="user-organizations"),
 ]

@@ -55,3 +55,8 @@ class OrganizationSerializer(serializers.ModelSerializer):
         instance.website = validated_data.get("website", instance.website)
         instance.save()
         return instance
+
+class OrganizationListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Organization
+        fields = ['id', 'name', 'logo', 'address', 'email', 'phone_number', 'website']

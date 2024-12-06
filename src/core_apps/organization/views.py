@@ -3,11 +3,12 @@ from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, generics, permissions, status
-from rest_framework.parsers import JSONParser, MultiPartParser
+from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework import serializers 
 from .models import Organization, OrganizationMember
-from .serializers import OrganizationSerializer, OrganizationMemberSerializer
+from .serializers import OrganizationSerializer, OrganizationMemberSerializer, OrganizationListSerializer
 
 User = get_user_model()
 
@@ -65,3 +66,18 @@ class OrganizationLogoUploadView(APIView):
 class OrganizationTestView(APIView):
     def get(self, request, *args, **kwargs):
         return Response({"message": "Organization test endpoint working!"}, status=200)
+
+class UserOrganizationsView(generics.GenericAPIView):
+    serializer_class = OrganizationListSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        organizations = Organization.objects.filter(organizationmember__user=user)
+        serializer = self.get_serializer(organizations, many=True)
+        return Response({
+            "status": "success",
+            "message": "Organizations retrieved successfully",
+            "data": serializer.data
+        }, status=status.HTTP_200_OK)
+
