@@ -49,3 +49,5 @@ EMAIL_PORT = env("EMAIL_PORT")
 DEFAULT_FROM_EMAIL = "support@apiimperfect.site"
 DOMAIN = env("DOMAIN")
 SITE_NAME = "Authors Haven"
+
+MEDIA_URL = f"http://{DOMAIN}/mediafiles/"

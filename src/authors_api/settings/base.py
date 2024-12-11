@@ -151,7 +151,7 @@ ADMIN_URL = "supersecret/"
 STATIC_URL = "/staticfiles/"
 STATIC_ROOT = str(ROOT_DIR / "staticfiles")
 
-MEDIA_URL = "/mediafiles/"
+# MEDIA_URL = "/mediafiles/"
 MEDIA_ROOT = str(ROOT_DIR / "mediafiles")
 
 # Default primary key field type
