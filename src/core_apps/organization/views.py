@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, generics, permissions, status
-from rest_framework.parsers import MultiPartParser
+from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import serializers 
@@ -50,18 +50,24 @@ class OrganizationMemberCreateView(generics.CreateAPIView):
 
         serializer.save()
 
-class OrganizationLogoUploadView(APIView):
-    parser_classes = [MultiPartParser]
+class OrganizationLogoUploadView(generics.RetrieveAPIView):
+    serializer_class = OrganizationSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
 
-    def patch(self, request, pk, format=None):
-        organization = get_object_or_404(Organization, pk=pk)
-        logo = request.data.get('logo')
+    def get_object(self):
+        id = self.kwargs["id"]
+        organization = get_object_or_404(Organization, id=id)
+        return organization
 
-        if logo:
-            organization.logo = logo
-            organization.save()
-            return Response({"message": "Logo updated successfully"}, status=status.HTTP_200_OK)
-        return Response({"error": "No logo file provided"}, status=status.HTTP_400_BAD_REQUEST)
+    def patch(self, request, *args, **kwargs):
+        instance = self.get_object()
+        data = {'logo': request.data.get('logo')}
+        serializer = self.get_serializer(instance, data=data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 class OrganizationTestView(APIView):
     def get(self, request, *args, **kwargs):
