@@ -8,7 +8,7 @@ from core_apps.common.models import TimeStampedModel
 from core_apps.organization.models import Organization
 
 class Client(TimeStampedModel):
-    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name="clients")
+    organization_id = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name="clients")
     name = models.CharField(max_length=255, verbose_name=_("Client Name"))
     address = models.TextField(verbose_name=_("Address"))
     email = models.EmailField(verbose_name=_("Email"))

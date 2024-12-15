@@ -41,6 +41,7 @@ urlpatterns = [
     path('api/v1/common/', include("core_apps.common.urls")),
     path('api/v1/invoice/', include("core_apps.invoice.urls")),
     path('api/v1/organization/', include("core_apps.organization.urls")),
+    path('api/v1/client/', include("core_apps.client.urls")),
 ]
 
 admin.site.site_header = "Authors Haven API Admin"
