@@ -19,6 +19,9 @@ makemigrations:
 migrate:
 	docker-compose -f local.yml run --rm api python manage.py migrate
 
+showmigrations:
+	docker-compose -f local.yml run --rm api python manage.py showmigrations
+
 collectstatic:
 	docker-compose -f local.yml run --rm api python manage.py collectstatic --no-input --clear
 
@@ -55,3 +58,5 @@ isort-diff:
 isort:
 	docker-compose -f local.yml exec api isort . --skip venv --skip migrations
 
+# psql -h 172.19.0.2 -U alphaogilo -d authors-live
+# docker-compose -f local.yml exec postgres psql -U alphaogilo -d authors-live

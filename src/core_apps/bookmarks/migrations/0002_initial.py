@@ -9,20 +9,22 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
+        ("bookmarks", "0001_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ("ratings", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name="rating",
+            model_name="bookmark",
             name="user",
             field=models.ForeignKey(
-                on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="bookmarks",
+                to=settings.AUTH_USER_MODEL,
             ),
         ),
         migrations.AlterUniqueTogether(
-            name="rating",
-            unique_together={("article", "user")},
+            name="bookmark",
+            unique_together={("user", "article")},
         ),
     ]

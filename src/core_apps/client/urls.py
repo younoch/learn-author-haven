@@ -9,5 +9,5 @@ urlpatterns = [
     # List and create clients
     path("", ClientListCreateView.as_view(), name="client-list-create"),
     re_path(r"^(?P<id>[0-9a-f-]+)/$", ClientRetrieveUpdateDestroyView.as_view(), name="client-retrieve-update-destroy"),
-    path("clients-by-organization/<uuid:organization_id>/", OrganizationClientsView.as_view(), name="organization-clients"),
+    path("clients-by-organization/<uuid:organization_uuid>/", OrganizationClientsView.as_view(), name="organization-clients"),
 ]

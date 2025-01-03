@@ -86,11 +86,11 @@ class OrganizationMemberCreateView(generics.CreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def perform_create(self, serializer):
-        organization_id = self.request.data.get("organization")
+        organization = self.request.data.get("organization")
         user_id = self.request.data.get("user_id")
 
         # Check if the user is already a member of the organization
-        if OrganizationMember.objects.filter(organization_id=organization_id, user_id=user_id).exists():
+        if OrganizationMember.objects.filter(organization=organization, user_id=user_id).exists():
             raise serializers.ValidationError("User is already a member of this organization.")
 
         serializer.save()

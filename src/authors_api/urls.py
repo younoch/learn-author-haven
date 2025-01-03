@@ -8,8 +8,6 @@ from rest_framework import permissions
 
 from core_apps.users.views import CustomUserDetailsView
 
-from core_apps.common.views import test_view
-
 schema_view = get_schema_view(
     openapi.Info(
         title="Authors Haven API",
