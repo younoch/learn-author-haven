@@ -6,13 +6,22 @@ class OrganizationMemberInline(admin.TabularInline):
     extra = 1
 
 class OrganizationAdmin(admin.ModelAdmin):
-    list_display = ('name', 'email', 'phone_number', 'website', 'created_at', 'updated_at')
-    search_fields = ('name', 'email', 'phone_number')
-    list_filter = ('created_at', 'updated_at')
+    list_display = (
+        'name', 'email', 'phone_number', 'website', 'created_at', 'updated_at',
+        'invoice_reference_prefix', 'default_template_id', 'theme_color', 'base_currency', 
+        'time_zone', 'business_type', 'date_format', 'invoice_expiry_days'
+    )
+    search_fields = ('name', 'email', 'phone_number', 'invoice_reference_prefix', 'base_currency')
+    list_filter = ('created_at', 'updated_at', 'business_type', 'base_currency')
     readonly_fields = ('id', 'created_at', 'updated_at')
     fieldsets = (
         (None, {
-            'fields': ('id', 'name', 'logo', 'address', 'email', 'phone_number', 'website', 'created_at', 'updated_at')
+            'fields': (
+                'id', 'name', 'logo', 'address', 'email', 'phone_number', 'website', 
+                'invoice_reference_prefix', 'default_template_id', 'theme_color', 'base_currency', 
+                'time_zone', 'business_type', 'date_format', 'terms_and_conditions', 'note', 
+                'invoice_expiry_days', 'created_at', 'updated_at'
+            )
         }),
     )
     inlines = [OrganizationMemberInline]

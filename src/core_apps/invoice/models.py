@@ -24,5 +24,18 @@ class Invoice(TimeStampedModel):
     # Totals
     tax = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("Tax"))
 
+    terms_and_conditions = models.TextField(
+        verbose_name=_("Terms and Conditions"), 
+        blank=True, 
+        null=True, 
+        default="Default terms and conditions."
+    )
+    note = models.TextField(
+        verbose_name=_("Note"), 
+        blank=True, 
+        null=True, 
+        default="Additional notes."
+    )
+
     def __str__(self):
         return f"Invoice {self.ref_no} for {self.client.name}"

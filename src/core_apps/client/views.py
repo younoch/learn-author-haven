@@ -9,8 +9,6 @@ from .serializers import (
     ClientListSerializer,
 )
 from core_apps.organization.models import Organization
-
-
 class ClientListCreateView(generics.ListCreateAPIView):
     queryset = Client.objects.all()
     serializer_class = ClientSerializer
@@ -25,8 +23,7 @@ class ClientListCreateView(generics.ListCreateAPIView):
             organization = Organization.objects.get(id=organization_uuid)
         except Organization.DoesNotExist:
             raise serializers.ValidationError({
-                "status": "error",
-                "message": "Organization not found."
+                "organization": ["Organization not found."]
             })
 
         # Check for existing client with the same email and organization
@@ -35,34 +32,42 @@ class ClientListCreateView(generics.ListCreateAPIView):
         ).first()
         if existing_client:
             raise serializers.ValidationError({
-                "status": "error",
-                "message": "Client with this email already exists for the organization."
+                "email": ["Client with this email already exists for the organization."]
             })
 
         serializer.save(organization=organization)
 
-
     def create(self, request, *args, **kwargs):
         serializer = CreateClientSerializer(data=request.data)
         try:
+            # Validate the serializer
             serializer.is_valid(raise_exception=True)
             self.perform_create(serializer)
+
+            # If everything is valid, return a success response
             return Response({
                 "status": "success",
                 "message": "Client created successfully",
                 "data": serializer.data
             }, status=status.HTTP_201_CREATED)
         except serializers.ValidationError as e:
+            # Handle field-specific errors
+            errors = e.detail
+            error_messages = {}
+            for field, error in errors.items():
+                error_messages[field] = error[0] if isinstance(error, list) else error
+
             return Response({
                 "status": "error",
-                "message": str(e.detail)
+                "message": "Validation failed",
+                "errors": error_messages
             }, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
+            # Handle unexpected exceptions
             return Response({
                 "status": "error",
                 "message": str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
 
 class ClientRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Client.objects.all()

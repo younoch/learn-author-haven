@@ -33,6 +33,16 @@ class OrganizationSerializer(serializers.ModelSerializer):
             "email",
             "phone_number",
             "website",
+            "invoice_reference_prefix",
+            "default_template_id",
+            "theme_color",
+            "base_currency",
+            "time_zone",
+            "business_type",
+            "date_format",
+            "terms_and_conditions",
+            "note",
+            "invoice_expiry_days",
             "members",
             "created_at",
             "updated_at",
@@ -47,16 +57,23 @@ class OrganizationSerializer(serializers.ModelSerializer):
         return organization
 
     def update(self, instance, validated_data):
-        instance.name = validated_data.get("name", instance.name)
-        instance.logo = validated_data.get("logo", instance.logo)
-        instance.address = validated_data.get("address", instance.address)
-        instance.email = validated_data.get("email", instance.email)
-        instance.phone_number = validated_data.get("phone_number", instance.phone_number)
-        instance.website = validated_data.get("website", instance.website)
+        # Update all fields, including new ones
+        for field, value in validated_data.items():
+            setattr(instance, field, value)
         instance.save()
         return instance
 
 class OrganizationListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Organization
-        fields = ['id', 'name', 'logo', 'address', 'email', 'phone_number', 'website']
+        fields = [
+            "id", 
+            "name", 
+            "logo", 
+            "address", 
+            "email", 
+            "phone_number", 
+            "website",
+            "base_currency",  # Add key identifying fields in the list serializer
+            "theme_color",
+        ]

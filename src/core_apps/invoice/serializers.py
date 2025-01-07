@@ -33,6 +33,8 @@ class InvoiceSerializer(serializers.ModelSerializer):
             "items_details",
             "payment_info_details",
             "tax",
+            "terms_and_conditions",
+            "note",
             "created_at",
             "updated_at",
         ]
@@ -41,11 +43,15 @@ class InvoiceSerializer(serializers.ModelSerializer):
         client_details = validated_data.pop("client")
         items_details = validated_data.pop("items")
         payment_info_details = validated_data.pop("payment_info")
+        terms_and_conditions = validated_data.pop("terms_and_conditions", "Default terms and conditions.")
+        note = validated_data.pop("note", "Additional notes.")
         invoice = Invoice.objects.create(
             **validated_data,
             client=client_details,
             items=items_details,
-            payment_info=payment_info_details
+            payment_info=payment_info_details,
+            terms_and_conditions=terms_and_conditions,
+            note=note
         )
         return invoice
 
@@ -57,5 +63,7 @@ class InvoiceSerializer(serializers.ModelSerializer):
         instance.items = validated_data.get("items", instance.items)
         instance.payment_info = validated_data.get("payment_info", instance.payment_info)
         instance.tax = validated_data.get("tax", instance.tax)
+        instance.terms_and_conditions = validated_data.get("terms_and_conditions", instance.terms_and_conditions)
+        instance.note = validated_data.get("note", instance.note)
         instance.save()
         return instance

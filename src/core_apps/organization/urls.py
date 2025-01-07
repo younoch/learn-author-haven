@@ -10,9 +10,9 @@ from .views import (
 
 urlpatterns = [
     path("", OrganizationListCreateView.as_view(), name="organization-list-create"),
-    re_path(r"^(?P<id>[0-9a-f-]+)/$", OrganizationRetrieveUpdateDestroyView.as_view(), name="organization-retrieve-update-destroy"),
+    re_path(r"^(?P<id>[0-9a-f-]+)/$", OrganizationRetrieveUpdateDestroyView.as_view(), name="organization-retrieve-update-destroy"),  # id as UUID
     path("members/", OrganizationMemberCreateView.as_view(), name="organization-member-create"),
-    path("<uuid:id>/upload-logo/", OrganizationLogoUploadView.as_view(), name="organization-upload-logo"), 
+    path("<uuid:id>/upload-logo/", OrganizationLogoUploadView.as_view(), name="organization-upload-logo"),  # id as UUID
     path("test/", OrganizationTestView.as_view(), name="organization-test"),
     path("user-organizations/", UserOrganizationsView.as_view(), name="user-organizations"),
 ]

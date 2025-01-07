@@ -9,7 +9,10 @@ class InvoiceAdmin(admin.ModelAdmin):
 
     fieldsets = (
         (None, {
-            'fields': ('id', 'created_by', 'updated_by', 'title', 'ref_no', 'date', 'client', 'items', 'payment_info', 'tax')
+            'fields': (
+                'id', 'created_by', 'updated_by', 'title', 'ref_no', 'date', 'client', 'items', 
+                'payment_info', 'tax', 'terms_and_conditions', 'note'
+            )
         }),
     )
 
