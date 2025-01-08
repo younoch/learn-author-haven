@@ -27,7 +27,7 @@ class InvoiceSerializer(serializers.ModelSerializer):
             "created_by_info",
             "updated_by_info",
             "title",
-            "ref_no",
+            "irn",  # Include 'irn' in the fields
             "date",
             "client_details",
             "items_details",
@@ -38,6 +38,7 @@ class InvoiceSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
+        read_only_fields = ["irn"]  # Make the 'irn' field read-only
 
     def create(self, validated_data):
         client_details = validated_data.pop("client")
@@ -56,8 +57,8 @@ class InvoiceSerializer(serializers.ModelSerializer):
         return invoice
 
     def update(self, instance, validated_data):
+        # Exclude the 'irn' field from being updated
         instance.title = validated_data.get("title", instance.title)
-        instance.ref_no = validated_data.get("ref_no", instance.ref_no)
         instance.date = validated_data.get("date", instance.date)
         instance.client = validated_data.get("client", instance.client)
         instance.items = validated_data.get("items", instance.items)

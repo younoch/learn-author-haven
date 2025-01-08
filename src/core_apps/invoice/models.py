@@ -3,6 +3,8 @@ from django.utils.translation import gettext_lazy as _
 from django.contrib.auth import get_user_model
 from core_apps.common.models import TimeStampedModel
 from core_apps.client.models import Organization, Client
+import uuid
+from datetime import datetime
 
 User = get_user_model()
 
@@ -12,7 +14,7 @@ class Invoice(TimeStampedModel):
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name="invoices")
     client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name="invoices")
     title = models.CharField(max_length=255, verbose_name=_("Title"))
-    ref_no = models.CharField(max_length=50, verbose_name=_("Reference Number"))
+    irn = models.CharField(max_length=255, verbose_name=_("Invoice Reference Number"), unique=True, blank=True)
     date = models.DateField(verbose_name=_("Date"))
 
     # Invoice Items
@@ -38,4 +40,25 @@ class Invoice(TimeStampedModel):
     )
 
     def __str__(self):
-        return f"Invoice {self.ref_no} for {self.client.name}"
+        return f"Invoice {self.irn} for {self.client.name}"
+
+    def save(self, *args, **kwargs):
+        if not self.irn:
+            # Generate IRN based on the format
+            irn_prefix = self.organization.invoice_reference_prefix or "INV"
+            current_date = datetime.now().strftime("%Y%m%d")
+            increment_number = self.get_incremental_number(current_date)
+            self.irn = f"{irn_prefix}-{current_date}-{increment_number}"
+        super().save(*args, **kwargs)
+
+    def get_incremental_number(self, date):
+        """
+        Fetch the last invoice for the current date to generate the next incremental number.
+        """
+        last_invoice = Invoice.objects.filter(irn__startswith=f"{self.organization.invoice_reference_prefix}-{date}").order_by('-irn').first()
+        if last_invoice:
+            last_number = last_invoice.irn.split('-')[-1]
+            next_number = str(int(last_number) + 1).zfill(6)  # Increment and ensure it is 6 digits
+        else:
+            next_number = "000001"  # Start from 000001 for the first invoice of the day
+        return next_number

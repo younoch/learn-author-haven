@@ -5,7 +5,7 @@ class InvoiceFilter(filters.FilterSet):
     class Meta:
         model = Invoice
         fields = {
-            'ref_no': ['exact', 'icontains'],
+            'irn': ['exact', 'icontains'], 
             'created_by': ['exact'],
             'updated_by': ['exact'],
             'date': ['exact', 'lte', 'gte'],

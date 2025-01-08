@@ -35,7 +35,6 @@ class OrganizationSerializer(serializers.ModelSerializer):
             "website",
             "invoice_reference_prefix",
             "default_template_id",
-            "theme_color",
             "base_currency",
             "time_zone",
             "business_type",
@@ -44,6 +43,7 @@ class OrganizationSerializer(serializers.ModelSerializer):
             "note",
             "invoice_expiry_days",
             "members",
+            "theme_color",
             "created_at",
             "updated_at",
         ]
@@ -74,6 +74,11 @@ class OrganizationListSerializer(serializers.ModelSerializer):
             "email", 
             "phone_number", 
             "website",
-            "base_currency",  # Add key identifying fields in the list serializer
+            "invoice_reference_prefix",
+            "default_template_id",
+            "base_currency",
+            "terms_and_conditions",
+            "note",
+            "invoice_expiry_days",
             "theme_color",
         ]
