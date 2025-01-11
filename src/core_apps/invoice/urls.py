@@ -1,5 +1,10 @@
 from django.urls import path
-from .views import InvoiceListCreateView, InvoiceRetrieveUpdateDestroyView, InvoiceTestView, GenerateIRNView
+from .views import (
+    InvoiceListCreateView, 
+    InvoiceRetrieveUpdateDestroyView, 
+    InvoiceTestView, 
+    GenerateIRNView
+)
 
 urlpatterns = [
     path("", InvoiceListCreateView.as_view(), name="invoice-list-create"),

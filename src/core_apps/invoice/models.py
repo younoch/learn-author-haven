@@ -3,19 +3,20 @@ from django.utils.translation import gettext_lazy as _
 from django.contrib.auth import get_user_model
 from core_apps.common.models import TimeStampedModel
 from core_apps.client.models import Organization, Client
-import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
+from django.core.exceptions import ValidationError
 
 User = get_user_model()
 
 class Invoice(TimeStampedModel):
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="created_invoices")
     updated_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="updated_invoices")
-    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name="invoices")
-    client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name="invoices")
-    title = models.CharField(max_length=255, verbose_name=_("Title"))
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name="Organization")
+    client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name="Client")
+    title = models.CharField(max_length=255, verbose_name=_("Title"), default="Invoice")
     irn = models.CharField(max_length=255, verbose_name=_("Invoice Reference Number"), unique=True, blank=True)
-    date = models.DateField(verbose_name=_("Date"))
+    issue_date = models.DateField(verbose_name=_("Issue Date"), default=datetime.now)
+    due_date = models.DateField(verbose_name=_("Due Date"), default=datetime.now() + timedelta(days=30))
 
     # Invoice Items
     items = models.JSONField(verbose_name=_("Invoice Items"))
@@ -24,7 +25,7 @@ class Invoice(TimeStampedModel):
     payment_info = models.JSONField(verbose_name=_("Payment Info"))
 
     # Totals
-    tax = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("Tax"))
+    discount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("Discount"))
 
     terms_and_conditions = models.TextField(
         verbose_name=_("Terms and Conditions"), 
@@ -49,6 +50,7 @@ class Invoice(TimeStampedModel):
             current_date = datetime.now().strftime("%Y%m%d")
             increment_number = self.get_incremental_number(current_date)
             self.irn = f"{irn_prefix}-{current_date}-{increment_number}"
+        self.full_clean()  # Validate before saving
         super().save(*args, **kwargs)
 
     def get_incremental_number(self, date):
@@ -62,3 +64,7 @@ class Invoice(TimeStampedModel):
         else:
             next_number = "000001"  # Start from 000001 for the first invoice of the day
         return next_number
+
+    def clean(self):
+        if self.due_date <= self.issue_date:
+            raise ValidationError(_("Due date must be later than the issue date."))

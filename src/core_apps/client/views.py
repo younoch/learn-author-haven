@@ -18,7 +18,7 @@ class ClientListCreateView(generics.ListCreateAPIView):
     ordering_fields = ["created_at", "updated_at"]
 
     def perform_create(self, serializer):
-        organization_uuid = self.request.data.get('organization')  # Use 'organization' field for UUID
+        organization_uuid = self.request.data.get('organization')  
         try:
             organization = Organization.objects.get(id=organization_uuid)
         except Organization.DoesNotExist:
@@ -26,7 +26,6 @@ class ClientListCreateView(generics.ListCreateAPIView):
                 "organization": ["Organization not found."]
             })
 
-        # Check for existing client with the same email and organization
         existing_client = Client.objects.filter(
             email=self.request.data.get('email'), organization=organization
         ).first()
