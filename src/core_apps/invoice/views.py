@@ -1,4 +1,6 @@
 import logging
+from uuid import UUID
+from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
 from django.http import Http404
@@ -10,10 +12,9 @@ from rest_framework.views import APIView
 from .models import Invoice, Organization
 from .pagination import InvoicePagination
 from .permissions import IsOwnerOrReadOnly
-from .serializers import InvoiceSerializer
+from .serializers import InvoiceListbyOrgSerializer, InvoiceDetailSerializer
 
 logger = logging.getLogger(__name__)
-
 class GenerateIRNView(APIView):
     def get(self, request, *args, **kwargs):
         try:
@@ -62,15 +63,25 @@ class GenerateIRNView(APIView):
         except Exception as e:
             logger.error(f"Error retrieving increment number: {str(e)}", exc_info=True)
             raise
-
-
 class InvoiceListCreateView(generics.ListCreateAPIView):
     queryset = Invoice.objects.all()
-    serializer_class = InvoiceSerializer
     permission_classes = [permissions.IsAuthenticated]
     pagination_class = InvoicePagination
     filter_backends = (DjangoFilterBackend, filters.OrderingFilter)
     ordering_fields = ["created_at", "updated_at"]
+    filterset_fields = ['organization']
+
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return InvoiceDetailSerializer
+        return InvoiceListbyOrgSerializer
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        organization_id = self.request.query_params.get('organization_id')
+        if organization_id:
+            queryset = queryset.filter(organization__id=organization_id)
+        return queryset
 
     def perform_create(self, serializer):
         try:
@@ -113,7 +124,7 @@ class InvoiceListCreateView(generics.ListCreateAPIView):
 
 class InvoiceRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Invoice.objects.all()
-    serializer_class = InvoiceSerializer
+    serializer_class = InvoiceDetailSerializer
     permission_classes = [permissions.IsAuthenticated, IsOwnerOrReadOnly]
     lookup_field = "id"
 
@@ -150,6 +161,44 @@ class InvoiceRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
             "message": "Invoice deleted successfully",
             "data": {}
         }, status=status.HTTP_204_NO_CONTENT)
+class InvoiceBulkDeleteView(generics.GenericAPIView):
+    queryset = Invoice.objects.all()
+    serializer_class = InvoiceDetailSerializer
+    permission_classes = [permissions.IsAuthenticated, IsOwnerOrReadOnly]
+
+    def delete(self, request, *args, **kwargs):
+        ids = request.data.get("ids", [])
+        if not ids:
+            return Response({
+                "status": "error",
+                "message": "No IDs provided."
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            uuids = [UUID(id) for id in ids]
+            invoices = Invoice.objects.filter(id__in=uuids)
+            invoices_deleted = invoices.count()
+            invoices.delete()
+            return Response({
+                "status": "success",
+                "message": f"{invoices_deleted} invoices deleted successfully.",
+                "data": {}
+            }, status=status.HTTP_204_NO_CONTENT)
+        except ValidationError as ve:
+            logger.error(f"Validation error: {str(ve)}", exc_info=True)
+            raise serializers.ValidationError({
+                "error": f"Validation error: {str(ve)}"
+            })
+        except Invoice.DoesNotExist:
+            return Response({
+                "status": "error",
+                "message": "Some invoices do not exist."
+            }, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            logger.error(f"Error deleting invoices: {str(e)}", exc_info=True)
+            raise serializers.ValidationError({
+                "error": f"An unexpected error occurred: {str(e)}"
+            })
 
 class InvoiceTestView(APIView):
     def get(self, request, *args, **kwargs):

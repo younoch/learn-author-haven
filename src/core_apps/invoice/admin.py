@@ -10,7 +10,7 @@ class InvoiceAdmin(admin.ModelAdmin):
     fieldsets = (
         ('Invoice Details', {
             'fields': (
-                'id', 'irn', 'title', 'organization', 'client', 'issue_date', 'due_date', 'items', 
+                'id', 'irn', 'logo_url', 'title', 'organization', 'client', 'issue_date', 'due_date', 'items', 
                 'payment_info', 'discount', 'terms_and_conditions', 'note'
             )
         }),

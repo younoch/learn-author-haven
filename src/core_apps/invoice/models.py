@@ -11,6 +11,7 @@ User = get_user_model()
 class Invoice(TimeStampedModel):
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="created_invoices")
     updated_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="updated_invoices")
+    logo_url = models.URLField(max_length=255, verbose_name=_("Logo URL"), blank=True, null=True)
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name="Organization")
     client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name="Client")
     title = models.CharField(max_length=255, verbose_name=_("Title"), default="Invoice")
