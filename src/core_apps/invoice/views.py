@@ -85,7 +85,6 @@ class InvoiceListCreateView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         try:
-            # Set created_by and updated_by to the same user when creating a new invoice
             serializer.save(created_by=self.request.user, updated_by=self.request.user)
             logger.info(
                 f"Invoice {serializer.data.get('irn')} created by {self.request.user.first_name}"

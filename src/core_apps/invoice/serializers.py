@@ -3,22 +3,35 @@ from .models import Invoice
 from core_apps.client.models import Organization, Client
 
 class InvoiceListSerializer(serializers.ModelSerializer):
-    client = serializers.CharField(source='client.name')
-    organization = serializers.CharField(source='organization.name')
+    client = serializers.CharField(source="client.name")
+    organization = serializers.CharField(source="organization.name")
 
     class Meta:
         model = Invoice
-        fields = ['id', 'irn', 'client', 'organization', 'issue_date', 'due_date']
+        fields = ["id", "irn", "client", "organization", "issue_date", "due_date"]
+
+
 class InvoiceListbyOrgSerializer(serializers.ModelSerializer):
-    client = serializers.CharField(source='client.name')
+    client = serializers.CharField(source="client.name")
 
     class Meta:
         model = Invoice
-        fields = ['id', 'irn', 'client', 'issue_date', 'due_date']
+        fields = ["id", "irn", "client", "issue_date", "due_date"]
+
+class SimpleClientSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Client
+        fields = ["id", "name", "email", "address", "phone_number"] 
+
+
+class SimpleOrganizationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Organization
+        fields = ["id", "name", "email", "address", "phone_number"] 
 
 class InvoiceDetailSerializer(serializers.ModelSerializer):
-    client = serializers.UUIDField(format='hex_verbose')
-    organization = serializers.UUIDField(format='hex_verbose')
+    client = SimpleClientSerializer()
+    organization = SimpleOrganizationSerializer()
     created_by_info = serializers.CharField(source="created_by.email", read_only=True)
     updated_by_info = serializers.CharField(source="updated_by.email", read_only=True)
     created_at = serializers.SerializerMethodField()
@@ -47,6 +60,7 @@ class InvoiceDetailSerializer(serializers.ModelSerializer):
             "discount",
             "terms_and_conditions",
             "note",
+            "template_id",
             "created_at",
             "updated_at",
             "organization",
@@ -54,6 +68,9 @@ class InvoiceDetailSerializer(serializers.ModelSerializer):
         read_only_fields = ["irn"]
 
     def create(self, validated_data):
+        """
+        Custom create method to handle UUIDs for organization and client.
+        """
         organization_uuid = validated_data.pop("organization")
         client_uuid = validated_data.pop("client")
 
@@ -68,6 +85,9 @@ class InvoiceDetailSerializer(serializers.ModelSerializer):
         return invoice
 
     def update(self, instance, validated_data):
+        """
+        Custom update method to handle UUIDs for organization and client.
+        """
         organization_uuid = validated_data.get("organization")
         client_uuid = validated_data.get("client")
 
@@ -79,16 +99,9 @@ class InvoiceDetailSerializer(serializers.ModelSerializer):
             client = Client.objects.get(id=client_uuid)
             instance.client = client
 
-        instance.logo_url = validated_data.get("logo_url", instance.logo_url)
-        instance.title = validated_data.get("title", instance.title)
-        instance.issue_date = validated_data.get("issue_date", instance.issue_date)
-        instance.due_date = validated_data.get("due_date", instance.due_date)
-        instance.items = validated_data.get("items", instance.items)
-        instance.payment_info = validated_data.get("payment_info", instance.payment_info)
-        instance.discount = validated_data.get("discount", instance.discount)
-        instance.terms_and_conditions = validated_data.get(
-            "terms_and_conditions", instance.terms_and_conditions
-        )
-        instance.note = validated_data.get("note", instance.note)
+        # Update other fields
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+
         instance.save()
         return instance

@@ -12,8 +12,8 @@ class Invoice(TimeStampedModel):
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="created_invoices")
     updated_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="updated_invoices")
     logo_url = models.URLField(max_length=255, verbose_name=_("Logo URL"), blank=True, null=True)
-    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name="Organization")
-    client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name="Client")
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name="invoices")
+    client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name="invoices")
     title = models.CharField(max_length=255, verbose_name=_("Title"), default="Invoice")
     irn = models.CharField(max_length=255, verbose_name=_("Invoice Reference Number"), unique=True, blank=True)
     issue_date = models.DateField(verbose_name=_("Issue Date"), default=datetime.now)
@@ -39,6 +39,12 @@ class Invoice(TimeStampedModel):
         blank=True, 
         null=True, 
         default="Additional notes."
+    )
+    template_id = models.IntegerField(
+        verbose_name=_("Template ID"), 
+        blank=False, 
+        null=False, 
+        default=1
     )
 
     def __str__(self):
