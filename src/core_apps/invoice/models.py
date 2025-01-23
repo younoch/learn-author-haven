@@ -19,14 +19,10 @@ class Invoice(TimeStampedModel):
     issue_date = models.DateField(verbose_name=_("Issue Date"), default=datetime.now)
     due_date = models.DateField(verbose_name=_("Due Date"), default=datetime.now() + timedelta(days=30))
 
-    # Invoice Items
     items = models.JSONField(verbose_name=_("Invoice Items"))
-
-    # Payment Info
     payment_info = models.JSONField(verbose_name=_("Payment Info"))
-
-    # Totals
     discount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("Discount"))
+    shipping = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("Shipping"), null=True, default=0.00)
 
     terms_and_conditions = models.TextField(
         verbose_name=_("Terms and Conditions"), 
@@ -52,24 +48,20 @@ class Invoice(TimeStampedModel):
 
     def save(self, *args, **kwargs):
         if not self.irn:
-            # Generate IRN based on the format
             irn_prefix = self.organization.invoice_reference_prefix or "INV"
             current_date = datetime.now().strftime("%Y%m%d")
             increment_number = self.get_incremental_number(current_date)
             self.irn = f"{irn_prefix}-{current_date}-{increment_number}"
-        self.full_clean()  # Validate before saving
+        self.full_clean()  
         super().save(*args, **kwargs)
 
     def get_incremental_number(self, date):
-        """
-        Fetch the last invoice for the current date to generate the next incremental number.
-        """
         last_invoice = Invoice.objects.filter(irn__startswith=f"{self.organization.invoice_reference_prefix}-{date}").order_by('-irn').first()
         if last_invoice:
             last_number = last_invoice.irn.split('-')[-1]
-            next_number = str(int(last_number) + 1).zfill(6)  # Increment and ensure it is 6 digits
+            next_number = str(int(last_number) + 1).zfill(6)
         else:
-            next_number = "000001"  # Start from 000001 for the first invoice of the day
+            next_number = "000001"
         return next_number
 
     def clean(self):

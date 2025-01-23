@@ -2,6 +2,7 @@ from rest_framework import serializers
 from .models import Invoice
 from core_apps.client.models import Organization, Client
 
+
 class InvoiceListSerializer(serializers.ModelSerializer):
     client = serializers.CharField(source="client.name")
     organization = serializers.CharField(source="organization.name")
@@ -18,16 +19,18 @@ class InvoiceListbyOrgSerializer(serializers.ModelSerializer):
         model = Invoice
         fields = ["id", "irn", "client", "issue_date", "due_date"]
 
+
 class SimpleClientSerializer(serializers.ModelSerializer):
     class Meta:
         model = Client
-        fields = ["id", "name", "email", "address", "phone_number"] 
+        fields = ["id", "name", "email", "address", "phone_number"]
 
 
 class SimpleOrganizationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Organization
-        fields = ["id", "name", "email", "address", "phone_number"] 
+        fields = ["id", "name", "email", "address", "phone_number"]
+
 
 class InvoiceDetailSerializer(serializers.ModelSerializer):
     client = SimpleClientSerializer()
@@ -58,6 +61,7 @@ class InvoiceDetailSerializer(serializers.ModelSerializer):
             "items",
             "payment_info",
             "discount",
+            "shipping",
             "terms_and_conditions",
             "note",
             "template_id",
@@ -67,20 +71,43 @@ class InvoiceDetailSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["irn"]
 
+
+class InvoiceCreateSerializer(serializers.ModelSerializer):
+    client = serializers.UUIDField()
+    organization = serializers.UUIDField()
+
+    class Meta:
+        model = Invoice
+        fields = [
+            "logo_url",
+            "title",
+            "issue_date",
+            "due_date",
+            "client",
+            "items",
+            "payment_info",
+            "discount",
+            "shipping",
+            "terms_and_conditions",
+            "note",
+            "template_id",
+            "organization",
+        ]
+
     def create(self, validated_data):
         """
         Custom create method to handle UUIDs for organization and client.
         """
-        organization_uuid = validated_data.pop("organization")
         client_uuid = validated_data.pop("client")
+        organization_uuid = validated_data.pop("organization")
 
-        organization = Organization.objects.get(id=organization_uuid)
         client = Client.objects.get(id=client_uuid)
+        organization = Organization.objects.get(id=organization_uuid)
 
         invoice = Invoice.objects.create(
             **validated_data,
-            organization=organization,
             client=client,
+            organization=organization,
         )
         return invoice
 

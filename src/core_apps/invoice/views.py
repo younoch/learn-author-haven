@@ -12,7 +12,7 @@ from rest_framework.views import APIView
 from .models import Invoice, Organization
 from .pagination import InvoicePagination
 from .permissions import IsOwnerOrReadOnly
-from .serializers import InvoiceListbyOrgSerializer, InvoiceDetailSerializer
+from .serializers import InvoiceListbyOrgSerializer, InvoiceDetailSerializer, InvoiceCreateSerializer
 
 logger = logging.getLogger(__name__)
 class GenerateIRNView(APIView):
@@ -73,7 +73,7 @@ class InvoiceListCreateView(generics.ListCreateAPIView):
 
     def get_serializer_class(self):
         if self.request.method == 'POST':
-            return InvoiceDetailSerializer
+            return InvoiceCreateSerializer
         return InvoiceListbyOrgSerializer
 
     def get_queryset(self):
