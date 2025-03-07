@@ -12,19 +12,12 @@ class TagListField(serializers.Field):
         return [tag.name for tag in value.all()]
 
     def to_internal_value(self, data):
-        if not isinstance(data, list):
-            raise serializers.ValidationError("Expected a list of tags")
+        if isinstance(data, str):  # Handle comma-separated string
+            data = [tag.strip() for tag in data.split(",") if tag.strip()]
+        elif not isinstance(data, list):  # Handle invalid formats
+            raise serializers.ValidationError("Expected a list of tags or a comma-separated string")
 
-        tag_objects = []
-        for tag_name in data:
-            tag_name = tag_name.strip()
-
-            if not tag_name:
-                continue
-            tag_objects.append(tag_name)
-        return tag_objects
-
-
+        return data
 class ArticleSerializer(serializers.ModelSerializer):
     author_info = ProfileSerializer(source="author.profile", read_only=True)
     banner_image = serializers.SerializerMethodField()
@@ -73,7 +66,7 @@ class ArticleSerializer(serializers.ModelSerializer):
         return formatted_date
 
     def create(self, validated_data):
-        tags = validated_data.pop("tags")
+        tags = validated_data.pop("tags", []) 
         article = Article.objects.create(**validated_data)
         article.tags.set(tags)
         return article
