@@ -1,5 +1,7 @@
 import logging
+from uuid import UUID
 
+from django.core.exceptions import ValidationError
 from django.contrib.auth import get_user_model
 from django.core.files.storage import default_storage
 from django.http import Http404
@@ -75,6 +77,46 @@ class ArticleRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
 
         return Response(serializer.data)
 
+class ArticleBulkDeleteView(generics.GenericAPIView):
+    queryset = Article.objects.all()
+    serializer_class = ArticleSerializer
+    permission_classes = [permissions.IsAuthenticated, IsOwnerOrReadOnly]
+
+    def delete(self, request, *args, **kwargs):
+        ids = request.data.get("ids", [])
+        if not ids:
+            return Response({
+                "status": "error",
+                "message": "No IDs provided."
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            uuids = [UUID(id) for id in ids]
+            articles = Article.objects.filter(id__in=uuids)
+            articles_deleted = articles.count()
+            articles.delete()
+            return Response({
+                "status": "success",
+                "message": f"{articles_deleted} articles deleted successfully.",
+                "data": {}
+            }, status=status.HTTP_200_OK)  # Use 200 OK instead of 204 No Content
+        except ValidationError as ve:
+            logger.error(f"Validation error: {str(ve)}", exc_info=True)
+            return Response({
+                "status": "error",
+                "message": f"Validation error: {str(ve)}"
+            }, status=status.HTTP_400_BAD_REQUEST)
+        except Article.DoesNotExist:
+            return Response({
+                "status": "error",
+                "message": "Some articles do not exist."
+            }, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            logger.error(f"Error deleting articles: {str(e)}", exc_info=True)
+            return Response({
+                "status": "error",
+                "message": f"An unexpected error occurred: {str(e)}"
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class ClapArticleView(generics.CreateAPIView, generics.DestroyAPIView):
     queryset = Clap.objects.all()
