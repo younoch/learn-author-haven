@@ -10,11 +10,13 @@ SECRET_KEY = env(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-CSRF_TRUSTED_ORIGINS = ["http://localhost:8080", "http://localhost:3000"]
+CSRF_TRUSTED_ORIGINS = ["http://localhost:8080", "http://localhost:3005", "http://localhost:3000"]
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000", 
     "http://127.0.0.1:3000", 
+    "http://localhost:3005", 
+    "http://127.0.0.1:3005", 
     "http://localhost:8080", 
     "http://127.0.0.1:8080"
     ]
